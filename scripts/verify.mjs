@@ -27,6 +27,12 @@ async function verifyViewport(name, viewport) {
 
   const timelineItemsAfterAnalyze = await page.locator(".timeline-item").count();
   const status = await page.locator(".status").first().textContent();
+  await page.getByRole("button", { name: "Workflows" }).click();
+  await page.getByRole("heading", { name: "Automation templates" }).waitFor();
+  await page.getByRole("button", { name: "Automation Logs" }).click();
+  await page.getByRole("heading", { name: "Automation execution history" }).waitFor();
+  await page.getByRole("button", { name: "Settings" }).click();
+  await page.getByRole("heading", { name: "Connection center" }).waitFor();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
 
   await page.screenshot({ path: `artifacts/flowpilot-${name}.png`, fullPage: true });

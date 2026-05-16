@@ -5,8 +5,14 @@ An AI-driven CRM automation platform demo for managing lead journeys with scenar
 ## What It Shows
 
 - Lead pipeline dashboard with score, priority, status, tags, and deal value
+- Internal product navigation for Pipeline, AI Inbox, Workflows, Automation Logs, and Settings
+- Scenario-based Kanban board for lead journey visibility
 - Scenario engine that moves customers through Discovery, Qualification, Onboarding, Active Client, and At Risk states
 - AI assistant flow that classifies a customer message and updates CRM state
+- AI Inbox with triage queue and simulated reply drafting
+- Workflow Builder view with automation templates, trigger mapping, run counts, and success rates
+- Global automation observability view
+- Settings and integrations view for OpenAI, n8n, PostgreSQL, and email provider states
 - Event timeline for actions such as `lead_created`, `ai_classified`, `scenario_changed`, and `task_generated`
 - Automation run logs designed to map cleanly to n8n webhook executions
 - Responsive product UI for desktop and mobile
