@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -31,6 +31,10 @@ import { applyAiClassification } from "./scenarioEngine";
 import type { AutomationLog, Lead, LeadStatus, Scenario } from "./types";
 
 type View = "pipeline" | "inbox" | "workflows" | "logs" | "settings";
+type LeadDraft = Pick<Lead, "name" | "company" | "email" | "source" | "value" | "notes">;
+
+const STORAGE_KEY = "flowpilot.leads.v1";
+const SELECTED_LEAD_KEY = "flowpilot.selectedLead.v1";
 
 const statusLabels: Record<LeadStatus, string> = {
   new: "New",
@@ -89,12 +93,20 @@ const integrations = [
 ];
 
 function App() {
-  const [leads, setLeads] = useState(initialLeads);
-  const [selectedLeadId, setSelectedLeadId] = useState(initialLeads[0].id);
+  const [leads, setLeads] = useState<Lead[]>(() => loadStoredLeads());
+  const [selectedLeadId, setSelectedLeadId] = useState(() => localStorage.getItem(SELECTED_LEAD_KEY) ?? initialLeads[0].id);
   const [message, setMessage] = useState("Vorrei iscrivermi, ma prima vorrei capire prezzi e percorso.");
   const [activeView, setActiveView] = useState<View>("pipeline");
   const [searchQuery, setSearchQuery] = useState("");
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? leads[0];
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+  }, [leads]);
+
+  useEffect(() => {
+    localStorage.setItem(SELECTED_LEAD_KEY, selectedLead.id);
+  }, [selectedLead.id]);
 
   const filteredLeads = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -146,6 +158,78 @@ function App() {
   function handleLeadSelect(leadId: string, view: View = activeView) {
     setSelectedLeadId(leadId);
     setActiveView(view);
+  }
+
+  function handleCreateLead() {
+    const lead = createDemoLead(leads.length + 1);
+
+    setLeads((currentLeads) => [lead, ...currentLeads]);
+    setSelectedLeadId(lead.id);
+    setActiveView("pipeline");
+  }
+
+  function handleUpdateLead(patch: Partial<LeadDraft>) {
+    setLeads((currentLeads) =>
+      currentLeads.map((lead) => (lead.id === selectedLead.id ? { ...lead, ...patch, lastActivity: "Just now" } : lead))
+    );
+  }
+
+  function handleScenarioChange(scenario: Scenario) {
+    setLeads((currentLeads) =>
+      currentLeads.map((lead) => {
+        if (lead.id !== selectedLead.id) return lead;
+
+        return {
+          ...lead,
+          scenario,
+          status: scenarioToStatus(scenario),
+          lastActivity: "Just now",
+          events: [
+            {
+              id: crypto.randomUUID(),
+              type: "scenario_changed",
+              title: `Scenario manually changed to ${scenario}`,
+              description: "CRM operator updated the customer journey stage from the account workspace.",
+              timestamp: "Just now"
+            },
+            ...lead.events
+          ],
+          automationLogs: [
+            {
+              id: crypto.randomUUID(),
+              workflow: "Manual scenario override",
+              event: "scenario_changed",
+              status: "success",
+              timestamp: "Just now",
+              payload: `{ scenario: '${scenario}', operator: 'demo_user' }`
+            },
+            ...lead.automationLogs
+          ]
+        };
+      })
+    );
+  }
+
+  function handleToggleTask(taskId: string) {
+    setLeads((currentLeads) =>
+      currentLeads.map((lead) =>
+        lead.id === selectedLead.id
+          ? {
+              ...lead,
+              tasks: lead.tasks.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+              lastActivity: "Just now"
+            }
+          : lead
+      )
+    );
+  }
+
+  function handleResetDemo() {
+    setLeads(initialLeads);
+    setSelectedLeadId(initialLeads[0].id);
+    setSearchQuery("");
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SELECTED_LEAD_KEY);
   }
 
   return (
@@ -223,6 +307,10 @@ function App() {
               <Filter size={16} />
               Filters
             </button>
+            <button className="secondary-action" onClick={handleCreateLead}>
+              <Plus size={16} />
+              New lead
+            </button>
             <button className="primary-action" onClick={() => setActiveView("workflows")}>
               <Play size={17} />
               Run demo workflow
@@ -251,6 +339,9 @@ function App() {
             leads={filteredLeads}
             message={message}
             onLeadSelect={handleLeadSelect}
+            onScenarioChange={handleScenarioChange}
+            onToggleTask={handleToggleTask}
+            onUpdateLead={handleUpdateLead}
             selectedLead={selectedLead}
             setMessage={setMessage}
           />
@@ -271,7 +362,7 @@ function App() {
 
         {activeView === "logs" && <LogsView logs={allLogs} />}
 
-        {activeView === "settings" && <SettingsView />}
+        {activeView === "settings" && <SettingsView onResetDemo={handleResetDemo} />}
       </section>
     </main>
   );
@@ -283,6 +374,9 @@ function PipelineView({
   leads,
   message,
   onLeadSelect,
+  onScenarioChange,
+  onToggleTask,
+  onUpdateLead,
   selectedLead,
   setMessage
 }: {
@@ -291,6 +385,9 @@ function PipelineView({
   leads: Lead[];
   message: string;
   onLeadSelect: (leadId: string, view?: View) => void;
+  onScenarioChange: (scenario: Scenario) => void;
+  onToggleTask: (taskId: string) => void;
+  onUpdateLead: (patch: Partial<LeadDraft>) => void;
   selectedLead: Lead;
   setMessage: (message: string) => void;
 }) {
@@ -298,7 +395,12 @@ function PipelineView({
     <section className="content-grid">
       <div className="main-stack">
         <KanbanBoard leads={leads} onLeadSelect={onLeadSelect} selectedLeadId={selectedLead.id} />
-        <LeadDetail selectedLead={selectedLead} />
+        <LeadDetail
+          onScenarioChange={onScenarioChange}
+          onToggleTask={onToggleTask}
+          onUpdateLead={onUpdateLead}
+          selectedLead={selectedLead}
+        />
       </div>
 
       <aside className="right-rail">
@@ -480,7 +582,7 @@ function LogsView({ logs }: { logs: Array<AutomationLog & { leadName: string; co
   );
 }
 
-function SettingsView() {
+function SettingsView({ onResetDemo }: { onResetDemo: () => void }) {
   return (
     <section className="settings-grid">
       <article className="lead-panel">
@@ -525,6 +627,9 @@ function SettingsView() {
           <Control icon={Database} label="Persistent data model planned" />
           <Control icon={Webhook} label="Webhook retry policy" />
         </div>
+        <button className="secondary-action full reset-action" onClick={onResetDemo}>
+          Reset local demo data
+        </button>
       </article>
     </section>
   );
@@ -589,7 +694,17 @@ function KanbanBoard({
   );
 }
 
-function LeadDetail({ selectedLead }: { selectedLead: Lead }) {
+function LeadDetail({
+  onScenarioChange,
+  onToggleTask,
+  onUpdateLead,
+  selectedLead
+}: {
+  onScenarioChange: (scenario: Scenario) => void;
+  onToggleTask: (taskId: string) => void;
+  onUpdateLead: (patch: Partial<LeadDraft>) => void;
+  selectedLead: Lead;
+}) {
   return (
     <article className="lead-panel">
       <div className="panel-header">
@@ -601,12 +716,27 @@ function LeadDetail({ selectedLead }: { selectedLead: Lead }) {
       </div>
 
       <div className="profile-grid">
-        <Info label="Company" value={selectedLead.company} />
-        <Info label="Email" value={selectedLead.email} />
-        <Info label="Source" value={selectedLead.source} />
-        <Info label="Deal value" value={selectedLead.value} />
+        <EditableInfo label="Company" value={selectedLead.company} onChange={(value) => onUpdateLead({ company: value })} />
+        <EditableInfo label="Email" value={selectedLead.email} onChange={(value) => onUpdateLead({ email: value })} />
+        <EditableInfo label="Source" value={selectedLead.source} onChange={(value) => onUpdateLead({ source: value })} />
+        <EditableInfo label="Deal value" value={selectedLead.value} onChange={(value) => onUpdateLead({ value })} />
         <Info label="Intent" value={selectedLead.intent} />
         <Info label="Sentiment" value={selectedLead.sentiment} />
+      </div>
+
+      <div className="scenario-control">
+        <label htmlFor="scenario-select">Scenario</label>
+        <select
+          id="scenario-select"
+          value={selectedLead.scenario}
+          onChange={(event) => onScenarioChange(event.target.value as Scenario)}
+        >
+          {[...scenarioSteps, "At Risk"].map((scenario) => (
+            <option key={scenario} value={scenario}>
+              {scenario}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="scenario-strip" aria-label="Scenario progress">
@@ -631,8 +761,12 @@ function LeadDetail({ selectedLead }: { selectedLead: Lead }) {
         )}
       </div>
 
-      <div className="notes-block">
-        <p>{selectedLead.notes}</p>
+      <div className="notes-block editable-notes">
+        <textarea
+          aria-label="Lead notes"
+          value={selectedLead.notes}
+          onChange={(event) => onUpdateLead({ notes: event.target.value })}
+        />
         <div className="tag-row">
           {selectedLead.tags.map((tag) => (
             <span key={tag}>{tag}</span>
@@ -667,7 +801,7 @@ function LeadDetail({ selectedLead }: { selectedLead: Lead }) {
           </div>
           <div className="task-list">
             {selectedLead.tasks.map((task) => (
-              <div className={`task-item ${task.done ? "done" : ""}`} key={task.id}>
+              <button className={`task-item ${task.done ? "done" : ""}`} key={task.id} onClick={() => onToggleTask(task.id)}>
                 <CheckCircle2 size={17} />
                 <div>
                   <strong>{task.title}</strong>
@@ -675,7 +809,7 @@ function LeadDetail({ selectedLead }: { selectedLead: Lead }) {
                     {task.owner} - {task.due}
                   </span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -791,6 +925,15 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
+function EditableInfo({ label, onChange, value }: { label: string; onChange: (value: string) => void; value: string }) {
+  return (
+    <label className="info-item editable-info">
+      <span>{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
 function viewTitle(view: View) {
   const titles: Record<View, string> = {
     pipeline: "AI-driven CRM command center",
@@ -804,3 +947,75 @@ function viewTitle(view: View) {
 }
 
 export default App;
+
+function loadStoredLeads() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return initialLeads;
+
+    const parsed = JSON.parse(stored) as Lead[];
+    return Array.isArray(parsed) && parsed.length ? parsed : initialLeads;
+  } catch {
+    return initialLeads;
+  }
+}
+
+function createDemoLead(index: number): Lead {
+  return {
+    id: crypto.randomUUID(),
+    name: `New Lead ${index}`,
+    company: "New Account",
+    email: `lead${index}@example.com`,
+    status: "new",
+    scenario: "Discovery",
+    score: 52,
+    priority: "Medium",
+    tags: ["new", "manual-entry"],
+    source: "Manual entry",
+    value: "EUR 1.500",
+    lastActivity: "Just now",
+    intent: "general_interest",
+    sentiment: "Neutral",
+    notes: "New lead created from the CRM workspace. Qualify the request and route it to the right scenario.",
+    events: [
+      {
+        id: crypto.randomUUID(),
+        type: "lead_created",
+        title: "Lead created manually",
+        description: "A CRM operator added this lead from the product demo workspace.",
+        timestamp: "Just now"
+      }
+    ],
+    tasks: [
+      {
+        id: crypto.randomUUID(),
+        title: "Qualify lead and confirm next step",
+        owner: "Sales",
+        due: "Today",
+        done: false
+      }
+    ],
+    automationLogs: [
+      {
+        id: crypto.randomUUID(),
+        workflow: "Manual lead intake",
+        event: "lead_created",
+        status: "success",
+        timestamp: "Just now",
+        payload: "{ source: 'manual_entry', scenario: 'Discovery' }"
+      }
+    ]
+  };
+}
+
+function scenarioToStatus(scenario: Scenario): LeadStatus {
+  const map: Record<Scenario, LeadStatus> = {
+    Discovery: "new",
+    Qualification: "qualified",
+    Onboarding: "onboarding",
+    "Active Client": "active",
+    "At Risk": "at_risk"
+  };
+
+  return map[scenario];
+}

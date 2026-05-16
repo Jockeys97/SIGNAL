@@ -20,7 +20,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -114,7 +115,8 @@ button {
 .lead-row,
 .primary-action,
 .secondary-action,
-.icon-button {
+.icon-button,
+.task-item {
   border: 0;
 }
 
@@ -479,6 +481,51 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.editable-info {
+  display: grid;
+}
+
+.editable-info input,
+.scenario-control select,
+.editable-notes textarea {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #1e3037;
+  background: transparent;
+  font-weight: 800;
+}
+
+.editable-info input {
+  margin-top: 5px;
+}
+
+.scenario-control {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 260px);
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f8faf9;
+}
+
+.scenario-control label {
+  color: #61747c;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.scenario-control select {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #cbdadf;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
 .scenario-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -545,6 +592,15 @@ h2 {
   margin: 0 0 12px;
   color: #3f5158;
   line-height: 1.5;
+}
+
+.editable-notes textarea {
+  min-height: 84px;
+  margin-bottom: 12px;
+  color: #3f5158;
+  font-weight: 500;
+  line-height: 1.5;
+  resize: vertical;
 }
 
 .tag-row {
@@ -615,10 +671,17 @@ h2 {
 .task-item {
   display: flex;
   gap: 10px;
+  width: 100%;
   padding: 12px;
   border: 1px solid #dde5e8;
   border-radius: 8px;
+  color: inherit;
   background: #ffffff;
+  text-align: left;
+}
+
+.task-item:hover {
+  border-color: #7fb6aa;
 }
 
 .task-item svg {
@@ -812,6 +875,10 @@ h2 {
 .control-list {
   display: grid;
   gap: 12px;
+}
+
+.reset-action {
+  margin-top: 14px;
 }
 
 .inbox-item {
@@ -1162,7 +1229,8 @@ h2 {
 
   .workflow-stats,
   .signal-grid,
-  .ai-result {
+  .ai-result,
+  .scenario-control {
     grid-template-columns: 1fr;
   }
 

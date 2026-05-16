@@ -16,6 +16,12 @@ An AI-driven CRM automation platform demo for managing lead journeys with scenar
 - Event timeline for actions such as `lead_created`, `ai_classified`, `scenario_changed`, and `task_generated`
 - Automation run logs designed to map cleanly to n8n webhook executions
 - Responsive product UI for desktop and mobile
+- Local persistence with `localStorage`
+- Manual lead creation from the workspace
+- Editable account fields and notes
+- Manual scenario changes with timeline and automation log updates
+- Clickable task completion state
+- Demo data reset from Settings
 
 ## Tech Stack
 

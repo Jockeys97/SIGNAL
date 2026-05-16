@@ -18,6 +18,8 @@ async function verifyViewport(name, viewport) {
   });
 
   await page.goto("http://127.0.0.1:5173/", { waitUntil: "networkidle" });
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: "networkidle" });
 
   const title = await page.locator("h1").textContent();
   const metricCards = await page.locator(".metric-card").count();
@@ -27,6 +29,12 @@ async function verifyViewport(name, viewport) {
 
   const timelineItemsAfterAnalyze = await page.locator(".timeline-item").count();
   const status = await page.locator(".status").first().textContent();
+  await page.getByRole("button", { name: "New lead" }).click();
+  await page.getByLabel("Company").fill(`QA Account ${name}`);
+  await page.getByLabel("Scenario", { exact: true }).selectOption("Onboarding");
+  await page.locator(".task-item").first().click();
+  await page.reload({ waitUntil: "networkidle" });
+  const persistedCompany = await page.getByLabel("Company").inputValue();
   await page.getByRole("button", { name: "Workflows" }).click();
   await page.getByRole("heading", { name: "Automation templates" }).waitFor();
   await page.getByRole("button", { name: "Automation Logs" }).click();
@@ -44,6 +52,7 @@ async function verifyViewport(name, viewport) {
     metricCards,
     timelineItemsAfterAnalyze,
     status,
+    persistedCompany,
     overflow,
     consoleErrors
   });
