@@ -272,6 +272,27 @@ button {
   text-transform: uppercase;
 }
 
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  margin-top: 10px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mode-pill.local {
+  color: #4f6370;
+  background: #edf2f4;
+}
+
+.mode-pill.api {
+  color: #0f604f;
+  background: #dff4ea;
+}
+
 h1,
 h2 {
   margin: 0;

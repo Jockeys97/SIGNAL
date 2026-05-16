@@ -29,6 +29,15 @@ import {
 import { initialLeads } from "./data";
 import { applyAiClassification } from "./scenarioEngine";
 import type { AutomationLog, Lead, LeadStatus, Scenario } from "./types";
+import {
+  apiModeEnabled,
+  changeApiScenario,
+  classifyApiMessage,
+  createApiLead,
+  fetchApiLeads,
+  toggleApiTask,
+  updateApiLead
+} from "./api";
 
 type View = "pipeline" | "inbox" | "workflows" | "logs" | "settings";
 type LeadDraft = Pick<Lead, "name" | "company" | "email" | "source" | "value" | "notes">;
@@ -98,15 +107,29 @@ function App() {
   const [message, setMessage] = useState("Vorrei iscrivermi, ma prima vorrei capire prezzi e percorso.");
   const [activeView, setActiveView] = useState<View>("pipeline");
   const [searchQuery, setSearchQuery] = useState("");
+  const [apiStatus, setApiStatus] = useState(apiModeEnabled ? "Connecting API" : "Local demo mode");
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? leads[0];
 
   useEffect(() => {
+    if (apiModeEnabled) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
   }, [leads]);
 
   useEffect(() => {
     localStorage.setItem(SELECTED_LEAD_KEY, selectedLead.id);
   }, [selectedLead.id]);
+
+  useEffect(() => {
+    if (!apiModeEnabled) return;
+
+    fetchApiLeads()
+      .then((apiLeads) => {
+        setLeads(apiLeads);
+        setSelectedLeadId((currentId) => apiLeads.find((lead) => lead.id === currentId)?.id ?? apiLeads[0]?.id ?? currentId);
+        setApiStatus("API connected");
+      })
+      .catch(() => setApiStatus("API unavailable"));
+  }, []);
 
   const filteredLeads = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -147,12 +170,16 @@ function App() {
     [leads]
   );
 
-  function handleClassify() {
+  async function handleClassify() {
     if (!message.trim()) return;
 
-    setLeads((currentLeads) =>
-      currentLeads.map((lead) => (lead.id === selectedLead.id ? applyAiClassification(lead, message.trim()) : lead))
-    );
+    if (apiModeEnabled) {
+      const updatedLead = await classifyApiMessage(selectedLead.id, message.trim());
+      replaceLead(updatedLead);
+      return;
+    }
+
+    replaceLead(applyAiClassification(selectedLead, message.trim()));
   }
 
   function handleLeadSelect(leadId: string, view: View = activeView) {
@@ -160,68 +187,43 @@ function App() {
     setActiveView(view);
   }
 
-  function handleCreateLead() {
-    const lead = createDemoLead(leads.length + 1);
+  async function handleCreateLead() {
+    const lead = apiModeEnabled ? await createApiLead() : createDemoLead(leads.length + 1);
 
     setLeads((currentLeads) => [lead, ...currentLeads]);
     setSelectedLeadId(lead.id);
     setActiveView("pipeline");
   }
 
-  function handleUpdateLead(patch: Partial<LeadDraft>) {
-    setLeads((currentLeads) =>
-      currentLeads.map((lead) => (lead.id === selectedLead.id ? { ...lead, ...patch, lastActivity: "Just now" } : lead))
-    );
+  async function handleUpdateLead(patch: Partial<LeadDraft>) {
+    const optimisticLead = { ...selectedLead, ...patch, lastActivity: "Just now" };
+    replaceLead(optimisticLead);
+
+    if (apiModeEnabled) {
+      replaceLead(await updateApiLead(selectedLead.id, patch));
+    }
   }
 
-  function handleScenarioChange(scenario: Scenario) {
-    setLeads((currentLeads) =>
-      currentLeads.map((lead) => {
-        if (lead.id !== selectedLead.id) return lead;
+  async function handleScenarioChange(scenario: Scenario) {
+    if (apiModeEnabled) {
+      replaceLead(await changeApiScenario(selectedLead.id, scenario));
+      return;
+    }
 
-        return {
-          ...lead,
-          scenario,
-          status: scenarioToStatus(scenario),
-          lastActivity: "Just now",
-          events: [
-            {
-              id: crypto.randomUUID(),
-              type: "scenario_changed",
-              title: `Scenario manually changed to ${scenario}`,
-              description: "CRM operator updated the customer journey stage from the account workspace.",
-              timestamp: "Just now"
-            },
-            ...lead.events
-          ],
-          automationLogs: [
-            {
-              id: crypto.randomUUID(),
-              workflow: "Manual scenario override",
-              event: "scenario_changed",
-              status: "success",
-              timestamp: "Just now",
-              payload: `{ scenario: '${scenario}', operator: 'demo_user' }`
-            },
-            ...lead.automationLogs
-          ]
-        };
-      })
-    );
+    replaceLead(applyScenarioChange(selectedLead, scenario));
   }
 
-  function handleToggleTask(taskId: string) {
-    setLeads((currentLeads) =>
-      currentLeads.map((lead) =>
-        lead.id === selectedLead.id
-          ? {
-              ...lead,
-              tasks: lead.tasks.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
-              lastActivity: "Just now"
-            }
-          : lead
-      )
-    );
+  async function handleToggleTask(taskId: string) {
+    if (apiModeEnabled) {
+      replaceLead(await toggleApiTask(selectedLead.id, taskId));
+      return;
+    }
+
+    replaceLead({
+      ...selectedLead,
+      tasks: selectedLead.tasks.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+      lastActivity: "Just now"
+    });
   }
 
   function handleResetDemo() {
@@ -230,6 +232,10 @@ function App() {
     setSearchQuery("");
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SELECTED_LEAD_KEY);
+  }
+
+  function replaceLead(updatedLead: Lead) {
+    setLeads((currentLeads) => currentLeads.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead)));
   }
 
   return (
@@ -301,6 +307,7 @@ function App() {
           <div>
             <p className="eyebrow">Customer journey orchestration</p>
             <h1>{viewTitle(activeView)}</h1>
+            <span className={`mode-pill ${apiModeEnabled ? "api" : "local"}`}>{apiStatus}</span>
           </div>
           <div className="topbar-actions">
             <button className="secondary-action">
@@ -1018,4 +1025,34 @@ function scenarioToStatus(scenario: Scenario): LeadStatus {
   };
 
   return map[scenario];
+}
+
+function applyScenarioChange(lead: Lead, scenario: Scenario): Lead {
+  return {
+    ...lead,
+    scenario,
+    status: scenarioToStatus(scenario),
+    lastActivity: "Just now",
+    events: [
+      {
+        id: crypto.randomUUID(),
+        type: "scenario_changed",
+        title: `Scenario manually changed to ${scenario}`,
+        description: "CRM operator updated the customer journey stage from the account workspace.",
+        timestamp: "Just now"
+      },
+      ...lead.events
+    ],
+    automationLogs: [
+      {
+        id: crypto.randomUUID(),
+        workflow: "Manual scenario override",
+        event: "scenario_changed",
+        status: "success",
+        timestamp: "Just now",
+        payload: `{ scenario: '${scenario}', operator: 'demo_user' }`
+      },
+      ...lead.automationLogs
+    ]
+  };
 }

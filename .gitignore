@@ -3,3 +3,5 @@ dist
 .DS_Store
 *.log
 artifacts/*.png
+server/data/*.db
+server/data/*.db-*

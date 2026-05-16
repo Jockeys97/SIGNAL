@@ -22,6 +22,8 @@ An AI-driven CRM automation platform demo for managing lead journeys with scenar
 - Manual scenario changes with timeline and automation log updates
 - Clickable task completion state
 - Demo data reset from Settings
+- Optional local backend API powered by Express and SQLite
+- Frontend API mode via `VITE_API_URL`, with localStorage fallback for GitHub Pages
 
 ## Tech Stack
 
@@ -29,6 +31,8 @@ An AI-driven CRM automation platform demo for managing lead journeys with scenar
 - TypeScript
 - Vite
 - Lucide icons
+- Express
+- SQLite via Node.js `node:sqlite`
 - Playwright verification script
 
 ## Demo Flow
@@ -58,3 +62,23 @@ node scripts/verify.mjs
 ```
 
 The verification script opens the local app in Chrome, clicks the AI classification flow, checks for console errors, verifies desktop/mobile layout overflow, and saves screenshots in `artifacts/`.
+
+## Local API Mode
+
+GitHub Pages runs the frontend-only version with `localStorage`. For local backend persistence:
+
+```bash
+npm run setup:api
+npm run dev:api
+VITE_API_URL=http://127.0.0.1:8787 npm run dev
+```
+
+The API exposes:
+
+- `GET /health`
+- `GET /api/leads`
+- `POST /api/leads`
+- `PATCH /api/leads/:id`
+- `POST /api/leads/:id/scenario`
+- `POST /api/leads/:id/tasks/:taskId/toggle`
+- `POST /api/leads/:id/classify`
