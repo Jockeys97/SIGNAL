@@ -1,8 +1,13 @@
 import type { Lead } from "./types";
 
+export const DEMO_LEAD_ID = "lead-001";
+
+export const DEMO_MESSAGE =
+  "Le conversioni sono calate e il team non capisce da quale causa partire.";
+
 export const initialLeads: Lead[] = [
   {
-    id: "lead-001",
+    id: DEMO_LEAD_ID,
     name: "Conversion Drop",
     company: "Growth Team",
     email: "growth@signal.demo",
@@ -10,45 +15,46 @@ export const initialLeads: Lead[] = [
     scenario: "Impact",
     score: 78,
     priority: "High",
-    tags: ["anomaly", "performance", "root-cause"],
-    source: "Decision dashboard",
-    value: "-18% conversions",
-    lastActivity: "12 min ago",
+    tags: ["anomalia", "performance", "root-cause"],
+    source: "Cruscotto decisionale",
+    value: "-18% conversioni",
+    lastActivity: "12 min fa",
     intent: "performance_anomaly",
     sentiment: "Concerned",
-    notes: "Conversions dropped below threshold. SIGNAL connected the anomaly to paid budget interruption and mobile landing friction.",
+    notes:
+      "Le conversioni sono sotto soglia. SIGNAL collega l'anomalia alla pausa budget paid e all'attrito sulla landing mobile.",
     events: [
       {
         id: "evt-001",
         type: "lead_created",
-        title: "Anomaly captured from dashboard",
-        description: "Conversion rate dropped 18% compared with the rolling target.",
-        timestamp: "Today, 09:42"
+        title: "Anomalia rilevata dal cruscotto",
+        description: "Il tasso di conversione è calato del 18% rispetto al target mobile.",
+        timestamp: "Oggi, 09:42"
       },
       {
         id: "evt-002",
         type: "ai_classified",
-        title: "AI identified root cause",
-        description: "Budget pause and mobile bounce rate were detected as the strongest intervention points.",
-        timestamp: "Today, 09:43"
+        title: "AI ha individuato la causa radice",
+        description: "Pausa budget e bounce mobile identificati come leve principali.",
+        timestamp: "Oggi, 09:43"
       }
     ],
     tasks: [
       {
         id: "task-001",
-        title: "Reactivate budget and fix mobile landing friction",
+        title: "Riattivare budget e correggere landing mobile",
         owner: "Sales",
-        due: "Today",
+        due: "Oggi",
         done: false
       }
     ],
     automationLogs: [
       {
         id: "log-001",
-        workflow: "Anomaly-to-action router",
+        workflow: "Router anomalia → azione",
         event: "ai_classified",
         status: "success",
-        timestamp: "Today, 09:43",
+        timestamp: "Oggi, 09:43",
         payload: "{ signal: 'conversion_drop', rootCause: 'budget_pause', confidence: 78 }"
       }
     ]
@@ -62,52 +68,53 @@ export const initialLeads: Lead[] = [
     scenario: "Project",
     score: 84,
     priority: "High",
-    tags: ["knowledge-base", "documents", "procedure"],
+    tags: ["knowledge-base", "documenti", "procedure"],
     source: "Knowledge base",
-    value: "1.3s response",
-    lastActivity: "1 h ago",
+    value: "1,3s risposta",
+    lastActivity: "1 h fa",
     intent: "knowledge_query",
     sentiment: "Positive",
-    notes: "Team asked a natural-language question across contracts, procedures and manuals. SIGNAL returned the source-backed answer path.",
+    notes:
+      "Il team ha posto una domanda in linguaggio naturale su contratti, procedure e manuali. SIGNAL ha tracciato il percorso di risposta con fonte.",
     events: [
       {
         id: "evt-003",
         type: "scenario_changed",
-        title: "Knowledge system moved to Project",
-        description: "Document workflow mapped and answer confidence threshold configured.",
-        timestamp: "Yesterday, 17:18"
+        title: "Knowledge system spostato in Progetto",
+        description: "Workflow documentale mappato e soglia di confidenza configurata.",
+        timestamp: "Ieri, 17:18"
       },
       {
         id: "evt-004",
         type: "task_generated",
-        title: "Knowledge task generated",
-        description: "Validate indexed procedures before team rollout.",
-        timestamp: "Yesterday, 17:19"
+        title: "Task knowledge generato",
+        description: "Validare le procedure indicizzate prima del rollout team.",
+        timestamp: "Ieri, 17:19"
       }
     ],
     tasks: [
       {
         id: "task-002",
-        title: "Validate document collections and confidence rules",
+        title: "Validare collezioni documenti e regole di confidenza",
         owner: "Success",
-        due: "Tomorrow",
+        due: "Domani",
         done: false
       },
       {
         id: "task-003",
-        title: "Connect answer logs to management dashboard",
+        title: "Collegare i log risposta al cruscotto management",
         owner: "AI Assistant",
-        due: "Tomorrow",
+        due: "Domani",
         done: true
       }
     ],
     automationLogs: [
       {
         id: "log-002",
-        workflow: "Knowledge answer workflow",
+        workflow: "Workflow risposta knowledge",
         event: "scenario_changed",
         status: "success",
-        timestamp: "Yesterday, 17:19",
+        timestamp: "Ieri, 17:19",
         payload: "{ documents: 247, avgResponse: '1.3s', accuracy: 98 }"
       }
     ]
@@ -121,38 +128,39 @@ export const initialLeads: Lead[] = [
     scenario: "Risk",
     score: 46,
     priority: "Medium",
-    tags: ["reputation", "sentiment", "competitor"],
-    source: "Market monitor",
+    tags: ["reputazione", "sentiment", "competitor"],
+    source: "Monitor di mercato",
     value: "-12 sentiment",
-    lastActivity: "9 days ago",
+    lastActivity: "9 giorni fa",
     intent: "reputation_risk",
     sentiment: "Concerned",
-    notes: "Weak negative signals are emerging around competitor comparison queries. Needs response framework before the issue scales.",
+    notes:
+      "Segnali negativi deboli sul confronto con i competitor. Serve un framework di risposta prima che il tema cresca.",
     events: [
       {
         id: "evt-005",
         type: "email_queued",
-        title: "Reputation response queued",
-        description: "Sentiment dropped across monitored queries and competitor mentions.",
-        timestamp: "Today, 08:30"
+        title: "Risposta reputazione in coda",
+        description: "Sentiment in calo sulle query monitorate e sulle menzioni competitor.",
+        timestamp: "Oggi, 08:30"
       }
     ],
     tasks: [
       {
         id: "task-004",
-        title: "Prepare response brief and competitor proof points",
+        title: "Preparare brief di risposta e proof point competitor",
         owner: "Sales",
-        due: "Today",
+        due: "Oggi",
         done: false
       }
     ],
     automationLogs: [
       {
         id: "log-003",
-        workflow: "Reputation monitoring loop",
+        workflow: "Loop monitor reputazione",
         event: "email_queued",
         status: "pending",
-        timestamp: "Today, 08:30",
+        timestamp: "Oggi, 08:30",
         payload: "{ sentimentDelta: -12, competitors: 3, risk: 'medium' }"
       }
     ]
@@ -166,38 +174,39 @@ export const initialLeads: Lead[] = [
     scenario: "Operational",
     score: 92,
     priority: "High",
-    tags: ["automation", "cost-reduction", "quick-win"],
-    source: "Process audit",
-    value: "-42% manual work",
-    lastActivity: "28 min ago",
+    tags: ["automazione", "riduzione-costi", "quick-win"],
+    source: "Audit processi",
+    value: "-42% lavoro manuale",
+    lastActivity: "28 min fa",
     intent: "process_automation",
     sentiment: "Positive",
-    notes: "Recurring manual finance task converted into an AI-assisted workflow with measurable time savings.",
+    notes:
+      "Attività finance ricorrente convertita in workflow AI con risparmio misurabile sul tempo operativo.",
     events: [
       {
         id: "evt-006",
         type: "onboarding_completed",
-        title: "Automation moved to operations",
-        description: "Workflow reached production-ready state and alerting was enabled.",
-        timestamp: "Monday, 11:04"
+        title: "Automazione in stato operativo",
+        description: "Workflow production-ready con alerting attivo.",
+        timestamp: "Lunedì, 11:04"
       }
     ],
     tasks: [
       {
         id: "task-005",
-        title: "Monitor savings and improve exception handling",
+        title: "Monitorare risparmio e gestione eccezioni",
         owner: "Success",
-        due: "Friday",
+        due: "Venerdì",
         done: false
       }
     ],
     automationLogs: [
       {
         id: "log-004",
-        workflow: "Process automation quick win",
+        workflow: "Quick win automazione processo",
         event: "onboarding_completed",
         status: "success",
-        timestamp: "Monday, 11:04",
+        timestamp: "Lunedì, 11:04",
         payload: "{ process: 'invoice_triage', costReduction: 42, active: true }"
       }
     ]

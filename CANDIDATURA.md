@@ -8,19 +8,26 @@ Non è un CRM tradizionale. È una demo prodotto che mostra come unire **fronten
 
 ## Demo consigliata (45–60 secondi)
 
-1. Apri la live demo e clicca **Enter workspace**.
-2. Seleziona **Conversion Drop** nel Decision Board.
-3. Mostra il pannello con anomalia, causa radice e azioni consigliate.
-4. Incolla un messaggio nel AI Command, ad esempio: `Le conversioni sono calate e il team non capisce da quale causa partire.`
-5. Clicca **Interpret signal** e mostra aggiornamento di stage, task, timeline e log.
-6. Apri **Workflow Studio** e **Event Logs** per mostrare l’integrazione operativa (n8n-ready).
+1. Apri la live demo: https://jockeys97.github.io/SIGNAL/
+2. Clicca **Apri la demo** oppure **Riproduci demo** (seleziona automaticamente *Conversion Drop*).
+3. Mostra la striscia **Analizza → Interpreta → Attiva** (allineata al linguaggio define / govern / make real).
+4. Leggi nel pannello destro: anomalia, causa radice, azioni consigliate.
+5. Clicca **Analizza segnale** e mostra aggiornamento di stage, cronologia, task e log.
+6. Apri **Automazioni** e **Storico** per mostrare l’integrazione operativa (n8n-ready).
+
+### Messaggio da incollare nel pannello AI
+
+```text
+Le conversioni sono calate e il team non capisce da quale causa partire.
+```
 
 ## Perché è rilevante per Bliss / agenzie AI-driven
 
-- Parla il linguaggio **strategia → governance → operations**
+- Parla il linguaggio **strategia → governance → operations** (define → govern → make real)
 - Mostra **interpretazione del dato**, non solo visualizzazione
 - Include concetti vicini a **AI visibility**, knowledge intelligence e reputation monitoring
 - Dimostra capacità di costruire **prodotti demo credibili**, non solo slide o CRUD
+- UI dark ad alta leggibilità, ispirata al design system Bliss (nero, bianco, accento rosa-arancio)
 
 ## Link
 
@@ -30,3 +37,9 @@ Non è un CRM tradizionale. È una demo prodotto che mostra come unire **fronten
 ## Stack
 
 React, TypeScript, Vite, Express (opzionale), SQLite locale, Playwright verify.
+
+## Note tecniche per il colloquio
+
+- La classificazione AI è **rule-based** in demo (motore locale dichiarato in Sistema).
+- Persistenza: `localStorage` su GitHub Pages; API Express+SQLite in locale con `VITE_API_URL`.
+- Il badge API mostra **API collegata** solo se `/health` risponde.

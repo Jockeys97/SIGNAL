@@ -4,6 +4,20 @@ const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
 
 export const apiModeEnabled = Boolean(apiUrl);
 
+export async function checkApiHealth(): Promise<boolean> {
+  if (!apiUrl) return false;
+
+  try {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(`${apiUrl}/health`, { signal: controller.signal });
+    window.clearTimeout(timeout);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (!apiUrl) {
     throw new Error("API URL is not configured");

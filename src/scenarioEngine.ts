@@ -1,6 +1,6 @@
 import type { AiClassification, Lead, TimelineEvent, AutomationLog, Task } from "./types";
 
-const nowLabel = "Just now";
+const nowLabel = "Adesso";
 
 export function classifyMessage(message: string): AiClassification {
   const text = message.toLowerCase();

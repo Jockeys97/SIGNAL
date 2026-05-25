@@ -1,65 +1,59 @@
 # SIGNAL
 
-AI Operational Intelligence prototype that turns scattered business signals into interpreted decisions, recommended actions, and workflow automations.
+Prototipo di **AI Operational Intelligence** che trasforma segnali aziendali sparsi in decisioni interpretate, azioni consigliate e automazioni di workflow.
 
 - Repository: [github.com/Jockeys97/SIGNAL](https://github.com/Jockeys97/SIGNAL)
-- Live demo: [jockeys97.github.io/SIGNAL](https://jockeys97.github.io/SIGNAL/) (after GitHub Pages is enabled on `main`)
+- Live demo: [jockeys97.github.io/SIGNAL](https://jockeys97.github.io/SIGNAL/)
 
-SIGNAL is built as a portfolio-grade product demo: part decision dashboard, part knowledge intelligence layer, part process automation cockpit. It reflects how modern organizations use AI inside core operations, not as a disconnected marketing tool.
+SIGNAL è una demo portfolio: cruscotto decisionale, layer knowledge intelligence e cockpit automazioni. Mostra come le organizzazioni usano l’AI dentro le operations, non come strumento di marketing scollegato.
 
-## What It Shows
+## Perché per agenzie AI-driven (es. Bliss)
 
-- Decision board across Analysis, Impact, Project, Operational, and Risk stages
-- AI interpretation of business signals from dashboards, documents, market monitors, and process audits
-- Root-cause panel with recommended actions for each signal type
-- Knowledge signal triage for document-backed questions
-- Workflow studio with automation templates mapped to real operating models
-- Decision observability with webhook-ready execution logs
-- Settings for AI model, knowledge base, reputation monitoring, and workflow routing
-- Local persistence with `localStorage`
-- Optional local API powered by Express and SQLite
-- Frontend API mode via `VITE_API_URL`, with localStorage fallback for static deployment
+- Narrativa **Analizza → Interpreta → Attiva**, allineata a *define → govern → make real*
+- Focus su **causa radice e azione operativa**, non solo KPI
+- Casi demo: anomalie performance, knowledge base, reputazione, automazione processi
+- UI dark leggibile, coerente con agenzie premium (contrasto elevato, CTA bianche, accento rosa-arancio)
+- Pronto a collegarsi a **n8n**, webhook e knowledge base reali (stati integrazione in Sistema)
 
-## Demo Flow
+## Cosa mostra
 
-1. Open the Decision Board and select a business signal such as conversion drop, policy query, or reputation watch.
-2. Review operating stage, AI interpretation, root cause, and recommended actions.
-3. Paste an operational message into the AI Command panel, for example a performance anomaly or document question.
-4. SIGNAL interprets the signal, updates the operating stage, generates the next action, and logs the automation event.
-5. Use Workflow Studio and Event Logs to show how the same logic would connect to n8n, internal alerts, and management dashboards.
+- Cruscotto decisionale su stage Analisi, Impatto, Progetto, Operativo, Rischio
+- Interpretazione AI di segnali da dashboard, documenti, monitor mercato, audit processi
+- Pannello causa/azioni per ogni tipo di segnale
+- Pulsante **Riproduci demo** per walkthrough guidato
+- Studio automazioni con template workflow
+- Storico decisioni con log esecuzione (webhook-ready)
+- Persistenza `localStorage` + API opzionale Express/SQLite
 
-## Why This Project
+## Flusso demo
 
-SIGNAL is designed to communicate a hybrid skill set: frontend product craft, AI-assisted decision logic, process automation thinking, and backend/API readiness.
+1. Apri la demo e clicca **Apri la demo** o **Riproduci demo**.
+2. Seleziona un caso (es. *Conversion Drop*) o usa la riproduzione automatica.
+3. Leggi anomalia, causa e azioni nel pannello decisionale.
+4. Incolla un messaggio nel pannello AI e clicca **Analizza segnale**.
+5. Osserva aggiornamento stage, task, cronologia e log.
+6. Apri **Automazioni** e **Storico** per mostrare il layer operativo.
 
-The narrative aligns with strategy-led AI consultancies: analyze how the organization works today, identify where AI creates measurable impact, design the system architecture, implement workflows inside existing tools, and make performance observable over time.
+## Stack
 
-The current implementation is intentionally local-first and demo-friendly. External systems such as OpenAI, n8n, PostgreSQL, and email providers are represented as integration states and workflow-ready concepts, not live production dependencies.
+- React, TypeScript, Vite, Lucide
+- Express + SQLite (`node:sqlite`) opzionale
+- Playwright (`npm run verify`)
 
-## Tech Stack
-
-- React
-- TypeScript
-- Vite
-- Lucide icons
-- Express
-- SQLite via Node.js `node:sqlite`
-- Playwright verification script
-
-## Architecture
+## Architettura
 
 ```text
-Business signal
-  -> local AI interpreter
-  -> operating stage update
-  -> root cause + recommended action
-  -> generated task
-  -> timeline event
-  -> automation log
-  -> localStorage or Express/SQLite persistence
+Segnale aziendale
+  -> interprete AI locale (regole)
+  -> aggiornamento stage operativo
+  -> causa radice + azione consigliata
+  -> task generato
+  -> evento timeline
+  -> log automazione
+  -> localStorage o Express/SQLite
 ```
 
-## Commands
+## Comandi
 
 ```bash
 npm install
@@ -68,11 +62,9 @@ npm run build
 npm run verify
 ```
 
-The verification script opens the local app in Chrome, runs the AI interpretation flow, checks for console errors, verifies desktop/mobile layout overflow, and saves screenshots in `artifacts/`. Start the Vite dev server before running it.
+Avvia il dev server prima di `npm run verify`. Lo script verifica intro, flusso AI, navigazione e layout desktop/mobile; salva screenshot in `artifacts/`.
 
-## Local API Mode
-
-Static deployments run the frontend-only version with `localStorage`. For local backend persistence:
+## API locale
 
 ```bash
 npm run setup:api
@@ -80,12 +72,8 @@ npm run dev:api
 VITE_API_URL=http://127.0.0.1:8787 npm run dev
 ```
 
-The API exposes:
+Endpoint: `GET /health`, `GET/POST/PATCH /api/leads`, classify, scenario, toggle task.
 
-- `GET /health`
-- `GET /api/leads`
-- `POST /api/leads`
-- `PATCH /api/leads/:id`
-- `POST /api/leads/:id/scenario`
-- `POST /api/leads/:id/tasks/:taskId/toggle`
-- `POST /api/leads/:id/classify`
+## Candidatura
+
+Vedi [CANDIDATURA.md](./CANDIDATURA.md) per pitch, script demo 60 secondi e note colloquio.
