@@ -1,29 +1,40 @@
-# FlowPilot CRM
+# SIGNAL
 
-An AI-driven CRM automation platform demo for managing lead journeys with scenario-based orchestration, AI classification, automation logs, tasks, and customer timelines.
+AI Operational Intelligence prototype that turns scattered business signals into interpreted decisions, recommended actions, and workflow automations.
+
+- Repository: [github.com/Jockeys97/SIGNAL](https://github.com/Jockeys97/SIGNAL)
+- Live demo: [jockeys97.github.io/SIGNAL](https://jockeys97.github.io/SIGNAL/) (after GitHub Pages is enabled on `main`)
+
+SIGNAL is built as a portfolio-grade product demo: part decision dashboard, part knowledge intelligence layer, part process automation cockpit. It reflects how modern organizations use AI inside core operations, not as a disconnected marketing tool.
 
 ## What It Shows
 
-- Lead pipeline dashboard with score, priority, status, tags, and deal value
-- Internal product navigation for Pipeline, AI Inbox, Workflows, Automation Logs, and Settings
-- Scenario-based Kanban board for lead journey visibility
-- Scenario engine that moves customers through Discovery, Qualification, Onboarding, Active Client, and At Risk states
-- AI assistant flow that classifies a customer message and updates CRM state
-- AI Inbox with triage queue and simulated reply drafting
-- Workflow Builder view with automation templates, trigger mapping, run counts, and success rates
-- Global automation observability view
-- Settings and integrations view for OpenAI, n8n, PostgreSQL, and email provider states
-- Event timeline for actions such as `lead_created`, `ai_classified`, `scenario_changed`, and `task_generated`
-- Automation run logs designed to map cleanly to n8n webhook executions
-- Responsive product UI for desktop and mobile
+- Decision board across Analysis, Impact, Project, Operational, and Risk stages
+- AI interpretation of business signals from dashboards, documents, market monitors, and process audits
+- Root-cause panel with recommended actions for each signal type
+- Knowledge signal triage for document-backed questions
+- Workflow studio with automation templates mapped to real operating models
+- Decision observability with webhook-ready execution logs
+- Settings for AI model, knowledge base, reputation monitoring, and workflow routing
 - Local persistence with `localStorage`
-- Manual lead creation from the workspace
-- Editable account fields and notes
-- Manual scenario changes with timeline and automation log updates
-- Clickable task completion state
-- Demo data reset from Settings
-- Optional local backend API powered by Express and SQLite
-- Frontend API mode via `VITE_API_URL`, with localStorage fallback for GitHub Pages
+- Optional local API powered by Express and SQLite
+- Frontend API mode via `VITE_API_URL`, with localStorage fallback for static deployment
+
+## Demo Flow
+
+1. Open the Decision Board and select a business signal such as conversion drop, policy query, or reputation watch.
+2. Review operating stage, AI interpretation, root cause, and recommended actions.
+3. Paste an operational message into the AI Command panel, for example a performance anomaly or document question.
+4. SIGNAL interprets the signal, updates the operating stage, generates the next action, and logs the automation event.
+5. Use Workflow Studio and Event Logs to show how the same logic would connect to n8n, internal alerts, and management dashboards.
+
+## Why This Project
+
+SIGNAL is designed to communicate a hybrid skill set: frontend product craft, AI-assisted decision logic, process automation thinking, and backend/API readiness.
+
+The narrative aligns with strategy-led AI consultancies: analyze how the organization works today, identify where AI creates measurable impact, design the system architecture, implement workflows inside existing tools, and make performance observable over time.
+
+The current implementation is intentionally local-first and demo-friendly. External systems such as OpenAI, n8n, PostgreSQL, and email providers are represented as integration states and workflow-ready concepts, not live production dependencies.
 
 ## Tech Stack
 
@@ -35,22 +46,18 @@ An AI-driven CRM automation platform demo for managing lead journeys with scenar
 - SQLite via Node.js `node:sqlite`
 - Playwright verification script
 
-## Demo Flow
+## Architecture
 
-1. Select a lead from the pipeline.
-2. Review CRM profile, score, scenario, timeline, tasks, and automation logs.
-3. Send the sample customer message through the AI assistant.
-4. The local scenario engine classifies the message, updates the lead score, changes scenario state, generates a task, and writes an automation log.
-
-## Future Backend Architecture
-
-The current MVP is frontend-first, but the domain model is structured to map naturally to a production backend:
-
-- Node.js API for lead, event, task, and workflow endpoints
-- PostgreSQL with Prisma models for persistent CRM state
-- n8n webhooks for workflow execution
-- OpenAI or Claude API for structured intent classification
-- Automation retry/error tracking for workflow observability
+```text
+Business signal
+  -> local AI interpreter
+  -> operating stage update
+  -> root cause + recommended action
+  -> generated task
+  -> timeline event
+  -> automation log
+  -> localStorage or Express/SQLite persistence
+```
 
 ## Commands
 
@@ -58,14 +65,14 @@ The current MVP is frontend-first, but the domain model is structured to map nat
 npm install
 npm run dev
 npm run build
-node scripts/verify.mjs
+npm run verify
 ```
 
-The verification script opens the local app in Chrome, clicks the AI classification flow, checks for console errors, verifies desktop/mobile layout overflow, and saves screenshots in `artifacts/`.
+The verification script opens the local app in Chrome, runs the AI interpretation flow, checks for console errors, verifies desktop/mobile layout overflow, and saves screenshots in `artifacts/`. Start the Vite dev server before running it.
 
 ## Local API Mode
 
-GitHub Pages runs the frontend-only version with `localStorage`. For local backend persistence:
+Static deployments run the frontend-only version with `localStorage`. For local backend persistence:
 
 ```bash
 npm run setup:api

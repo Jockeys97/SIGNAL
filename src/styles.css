@@ -18,6 +18,75 @@ body {
   min-height: 100vh;
 }
 
+.intro-shell {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 32px 20px;
+  background:
+    radial-gradient(circle at top right, rgba(28, 107, 91, 0.18), transparent 42%),
+    linear-gradient(145deg, #071018 0%, #10242c 55%, #16313a 100%);
+  color: #eef6f8;
+}
+
+.intro-panel {
+  width: min(760px, 100%);
+  display: grid;
+  gap: 22px;
+}
+
+.intro-eyebrow {
+  margin: 0;
+  color: #8eb5ad;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.intro-panel h1 {
+  margin: 0;
+  font-family: Outfit, Inter, sans-serif;
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.intro-lead {
+  margin: 0;
+  max-width: 58ch;
+  color: #c4d5db;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.intro-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.intro-grid article {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.intro-grid strong,
+.intro-grid span {
+  display: block;
+}
+
+.intro-grid span {
+  margin-top: 6px;
+  color: #9eb2ba;
+  line-height: 1.45;
+}
+
+.intro-cta {
+  width: fit-content;
+}
+
 button,
 input,
 textarea,
@@ -944,6 +1013,51 @@ h2 {
 .reply-draft p {
   margin: 0;
   color: #53656d;
+  line-height: 1.5;
+}
+
+.decision-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.decision-block {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #dce5e8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.decision-block span {
+  color: #6b7c83;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.decision-block strong {
+  color: #1d3037;
+  line-height: 1.45;
+}
+
+.decision-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.decision-actions span {
+  color: #6b7c83;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.decision-actions ol {
+  margin: 0;
+  padding-left: 18px;
+  color: #41535b;
   line-height: 1.5;
 }
 

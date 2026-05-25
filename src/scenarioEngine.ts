@@ -5,46 +5,57 @@ const nowLabel = "Just now";
 export function classifyMessage(message: string): AiClassification {
   const text = message.toLowerCase();
 
-  if (text.includes("prezzo") || text.includes("pricing") || text.includes("costo") || text.includes("iscriv")) {
+  if (text.includes("document") || text.includes("contratt") || text.includes("procedur") || text.includes("manual")) {
     return {
-      intent: "pricing_interest",
+      intent: "knowledge_query",
       sentiment: "Positive",
       scoreDelta: 12,
-      nextScenario: "Qualification",
-      action: "Send pricing deck and create sales follow-up",
-      eventTitle: "AI detected pricing intent"
+      nextScenario: "Project",
+      action: "Retrieve the source-backed answer and log confidence",
+      eventTitle: "AI detected knowledge-base query"
     };
   }
 
-  if (text.includes("demo") || text.includes("call") || text.includes("consulenza")) {
+  if (text.includes("costo") || text.includes("efficien") || text.includes("process") || text.includes("automat")) {
     return {
-      intent: "demo_request",
+      intent: "process_automation",
       sentiment: "Positive",
       scoreDelta: 16,
-      nextScenario: "Onboarding",
-      action: "Book demo and generate onboarding checklist",
-      eventTitle: "AI detected demo request"
+      nextScenario: "Operational",
+      action: "Map the process quick win and trigger automation workflow",
+      eventTitle: "AI detected operational automation opportunity"
     };
   }
 
-  if (text.includes("problema") || text.includes("non riesco") || text.includes("dubbi")) {
+  if (text.includes("reputazione") || text.includes("competitor") || text.includes("sentiment") || text.includes("trend")) {
     return {
-      intent: "support_or_objection",
+      intent: "reputation_risk",
       sentiment: "Concerned",
       scoreDelta: -8,
-      nextScenario: "At Risk",
-      action: "Create human follow-up task",
-      eventTitle: "AI detected objection"
+      nextScenario: "Risk",
+      action: "Create reputation response brief and monitor weak signals",
+      eventTitle: "AI detected market reputation risk"
+    };
+  }
+
+  if (text.includes("anomalia") || text.includes("cal") || text.includes("conversion") || text.includes("rischio") || text.includes("causa")) {
+    return {
+      intent: "performance_anomaly",
+      sentiment: "Concerned",
+      scoreDelta: 10,
+      nextScenario: "Impact",
+      action: "Identify root cause and assign the highest-impact action",
+      eventTitle: "AI detected performance anomaly"
     };
   }
 
   return {
-    intent: "general_interest",
+    intent: "operational_signal",
     sentiment: "Neutral",
     scoreDelta: 5,
-    nextScenario: "Discovery",
-    action: "Ask qualifying question and keep lead in discovery",
-    eventTitle: "AI detected general interest"
+    nextScenario: "Analysis",
+    action: "Analyze available data and estimate business impact",
+    eventTitle: "AI detected operational signal"
   };
 }
 
@@ -64,15 +75,15 @@ export function applyAiClassification(lead: Lead, message: string): Lead {
   const scenarioEvent: TimelineEvent = {
     id: crypto.randomUUID(),
     type: "scenario_changed",
-    title: `Scenario changed to ${classification.nextScenario}`,
-    description: `Lead moved by the scenario engine after AI classification.`,
+    title: `Operating stage changed to ${classification.nextScenario}`,
+    description: `Business signal moved by the SIGNAL engine after AI interpretation.`,
     timestamp: nowLabel
   };
 
   const task: Task = {
     id: crypto.randomUUID(),
     title: classification.action,
-    owner: classification.nextScenario === "At Risk" ? "Sales" : "AI Assistant",
+    owner: classification.nextScenario === "Risk" ? "Sales" : "AI Assistant",
     due: "Today",
     done: false
   };
@@ -83,7 +94,7 @@ export function applyAiClassification(lead: Lead, message: string): Lead {
     event: "ai_classified",
     status: "success",
     timestamp: nowLabel,
-    payload: `{ intent: '${classification.intent}', nextScenario: '${classification.nextScenario}', score: ${score} }`
+    payload: `{ signal: '${classification.intent}', stage: '${classification.nextScenario}', confidence: ${score} }`
   };
 
   return {
@@ -104,11 +115,11 @@ export function applyAiClassification(lead: Lead, message: string): Lead {
 
 function scenarioToStatus(scenario: Lead["scenario"]): Lead["status"] {
   const map: Record<Lead["scenario"], Lead["status"]> = {
-    Discovery: "new",
-    Qualification: "qualified",
-    Onboarding: "onboarding",
-    "Active Client": "active",
-    "At Risk": "at_risk"
+    Analysis: "new",
+    Impact: "qualified",
+    Project: "onboarding",
+    Operational: "active",
+    Risk: "at_risk"
   };
 
   return map[scenario];
@@ -116,11 +127,11 @@ function scenarioToStatus(scenario: Lead["scenario"]): Lead["status"] {
 
 function workflowForScenario(scenario: Lead["scenario"]) {
   const map: Record<Lead["scenario"], string> = {
-    Discovery: "Discovery question generator",
-    Qualification: "Lead qualification router",
-    Onboarding: "Onboarding checklist generator",
-    "Active Client": "Expansion opportunity detector",
-    "At Risk": "Inactive lead recovery"
+    Analysis: "AI readiness analyzer",
+    Impact: "Anomaly-to-action router",
+    Project: "Knowledge answer workflow",
+    Operational: "Process automation quick win",
+    Risk: "Reputation monitoring loop"
   };
 
   return map[scenario];

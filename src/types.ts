@@ -1,6 +1,6 @@
 export type LeadStatus = "new" | "qualified" | "onboarding" | "active" | "inactive" | "at_risk";
 
-export type Scenario = "Discovery" | "Qualification" | "Onboarding" | "Active Client" | "At Risk";
+export type Scenario = "Analysis" | "Impact" | "Project" | "Operational" | "Risk";
 
 export type AutomationStatus = "success" | "pending" | "error";
 

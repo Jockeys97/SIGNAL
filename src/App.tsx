@@ -42,69 +42,71 @@ import {
 type View = "pipeline" | "inbox" | "workflows" | "logs" | "settings";
 type LeadDraft = Pick<Lead, "name" | "company" | "email" | "source" | "value" | "notes">;
 
-const STORAGE_KEY = "flowpilot.leads.v1";
-const SELECTED_LEAD_KEY = "flowpilot.selectedLead.v1";
+const STORAGE_KEY = "signal.audiences.v1";
+const SELECTED_LEAD_KEY = "signal.selectedAudience.v1";
+const INTRO_KEY = "signal.intro.seen.v1";
 
 const statusLabels: Record<LeadStatus, string> = {
-  new: "New",
-  qualified: "Qualified",
-  onboarding: "Onboarding",
-  active: "Active",
+  new: "In analysis",
+  qualified: "Impact mapped",
+  onboarding: "In project",
+  active: "Operational",
   inactive: "Inactive",
-  at_risk: "At Risk"
+  at_risk: "At risk"
 };
 
-const scenarioSteps: Scenario[] = ["Discovery", "Qualification", "Onboarding", "Active Client"];
+const scenarioSteps: Scenario[] = ["Analysis", "Impact", "Project", "Operational"];
 
 const navItems = [
-  { id: "pipeline", label: "Pipeline", icon: KanbanSquare },
-  { id: "inbox", label: "AI Inbox", icon: MessageSquareText },
-  { id: "workflows", label: "Workflows", icon: Zap },
-  { id: "logs", label: "Automation Logs", icon: Webhook },
-  { id: "settings", label: "Settings", icon: Settings }
+  { id: "pipeline", label: "Decision Board", icon: KanbanSquare },
+  { id: "inbox", label: "Knowledge Signals", icon: MessageSquareText },
+  { id: "workflows", label: "Workflow Studio", icon: Zap },
+  { id: "logs", label: "Event Logs", icon: Webhook },
+  { id: "settings", label: "System", icon: Settings }
 ] satisfies Array<{ id: View; label: string; icon: typeof KanbanSquare }>;
 
 const workflowTemplates = [
   {
     id: "wf-qualification",
-    name: "Lead qualification router",
+    name: "Anomaly-to-action router",
     trigger: "ai_classified",
     status: "Live",
     runs: 248,
     successRate: "98.8%",
-    steps: ["Capture message", "Classify intent", "Update score", "Notify sales"]
+    steps: ["Capture weak signal", "Find root cause", "Recommend action", "Notify owner"]
   },
   {
     id: "wf-onboarding",
-    name: "Onboarding checklist generator",
-    trigger: "scenario_changed",
+    name: "Knowledge answer workflow",
+    trigger: "knowledge_query",
     status: "Live",
     runs: 91,
     successRate: "96.4%",
-    steps: ["Detect new scenario", "Create tasks", "Queue welcome email", "Provision access"]
+    steps: ["Parse question", "Retrieve source", "Generate answer", "Log confidence"]
   },
   {
     id: "wf-recovery",
-    name: "Inactive lead recovery",
-    trigger: "email_queued",
+    name: "Reputation monitoring loop",
+    trigger: "market_signal",
     status: "Review",
     runs: 37,
     successRate: "89.1%",
-    steps: ["Find inactivity", "Write follow-up", "Schedule reminder", "Escalate if ignored"]
+    steps: ["Track sentiment", "Compare competitors", "Detect risk", "Escalate response"]
   }
 ];
 
 const integrations = [
-  { name: "OpenAI", status: "Mock mode", icon: Sparkles },
-  { name: "n8n Webhooks", status: "Ready to connect", icon: Webhook },
-  { name: "PostgreSQL", status: "Planned", icon: Database },
-  { name: "Email provider", status: "Simulated", icon: Mail }
+  { name: "AI decision model", status: "Local rule engine", icon: Sparkles },
+  { name: "n8n Webhooks", status: "Workflow-ready", icon: Webhook },
+  { name: "Company knowledge base", status: "Simulated index", icon: Database },
+  { name: "Reputation monitoring", status: "Market signals mock", icon: Mail }
 ];
 
 function App() {
+  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem(INTRO_KEY));
   const [leads, setLeads] = useState<Lead[]>(() => loadStoredLeads());
   const [selectedLeadId, setSelectedLeadId] = useState(() => localStorage.getItem(SELECTED_LEAD_KEY) ?? initialLeads[0].id);
-  const [message, setMessage] = useState("Vorrei iscrivermi, ma prima vorrei capire prezzi e percorso.");
+  const [message, setMessage] = useState("Le conversioni sono calate e il team non capisce da quale causa partire.");
   const [activeView, setActiveView] = useState<View>("pipeline");
   const [searchQuery, setSearchQuery] = useState("");
   const [apiStatus, setApiStatus] = useState(apiModeEnabled ? "Connecting API" : "Local demo mode");
@@ -150,11 +152,11 @@ function App() {
     const automations = leads.reduce((sum, lead) => sum + lead.automationLogs.length, 0);
 
     return [
-      { label: "Pipeline value", value: "EUR 27.9k", icon: Activity },
-      { label: "Avg lead score", value: `${avgScore}%`, icon: Sparkles },
-      { label: "Active clients", value: activeValue.toString(), icon: UserRoundCheck },
-      { label: "Open tasks", value: openTasks.toString(), icon: Clock3 },
-      { label: "Automation runs", value: automations.toString(), icon: Webhook }
+      { label: "Efficiency impact", value: "-42%", icon: Activity },
+      { label: "Decision confidence", value: `${avgScore}%`, icon: Sparkles },
+      { label: "Operational systems", value: activeValue.toString(), icon: UserRoundCheck },
+      { label: "Actions pending", value: openTasks.toString(), icon: Clock3 },
+      { label: "AI decisions logged", value: automations.toString(), icon: Webhook }
     ];
   }, [leads]);
 
@@ -238,6 +240,15 @@ function App() {
     setLeads((currentLeads) => currentLeads.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead)));
   }
 
+  function enterWorkspace() {
+    localStorage.setItem(INTRO_KEY, "1");
+    setShowIntro(false);
+  }
+
+  if (showIntro) {
+    return <IntroLanding onEnter={enterWorkspace} />;
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar">
@@ -246,16 +257,16 @@ function App() {
             <Route size={20} />
           </div>
           <div>
-            <p>FlowPilot</p>
-            <span>AI CRM Automation</span>
+            <p>SIGNAL</p>
+            <span>AI Operational Intelligence</span>
           </div>
         </div>
 
         <div className="search-box">
           <Search size={16} />
           <input
-            aria-label="Search leads"
-            placeholder="Search leads"
+            aria-label="Search audiences"
+            placeholder="Search signals"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
           />
@@ -279,9 +290,9 @@ function App() {
           })}
         </nav>
 
-        <section className="lead-list" aria-label="Lead list">
+        <section className="lead-list" aria-label="Audience list">
           <div className="section-heading">
-            <span>Leads</span>
+            <span>Audiences</span>
             <strong>{filteredLeads.length}</strong>
           </div>
 
@@ -305,7 +316,7 @@ function App() {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Customer journey orchestration</p>
+            <p className="eyebrow">Transform data into decisions. Turn signals into action.</p>
             <h1>{viewTitle(activeView)}</h1>
             <span className={`mode-pill ${apiModeEnabled ? "api" : "local"}`}>{apiStatus}</span>
           </div>
@@ -316,16 +327,16 @@ function App() {
             </button>
             <button className="secondary-action" onClick={handleCreateLead}>
               <Plus size={16} />
-              New lead
+              New process signal
             </button>
             <button className="primary-action" onClick={() => setActiveView("workflows")}>
               <Play size={17} />
-              Run demo workflow
+              Run decision workflow
             </button>
           </div>
         </header>
 
-        <section className="metrics-grid" aria-label="CRM metrics">
+        <section className="metrics-grid" aria-label="SIGNAL metrics">
           {metrics.map((metric) => {
             const Icon = metric.icon;
 
@@ -417,6 +428,7 @@ function PipelineView({
           selectedLead={selectedLead}
           setMessage={setMessage}
         />
+        <DecisionInsights selectedLead={selectedLead} />
         <AutomationPanel logs={selectedLead.automationLogs} />
         <QuickSignals logs={allLogs} />
       </aside>
@@ -444,10 +456,10 @@ function InboxView({
       <article className="lead-panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">AI triage queue</p>
-            <h2>Messages waiting for routing</h2>
+            <p className="eyebrow">Company intelligence queue</p>
+            <h2>Questions, anomalies and market signals</h2>
           </div>
-          <span className="status status-qualified">{leads.length} leads</span>
+          <span className="status status-qualified">{leads.length} signals</span>
         </div>
 
         <div className="inbox-list">
@@ -482,12 +494,12 @@ function InboxView({
           </div>
           <div className="reply-draft">
             <p>
-              Hi {selectedLead.name.split(" ")[0]}, thanks for reaching out. Based on your request, I can send the
-              pricing overview and help you pick the best onboarding path.
+              SIGNAL detected the strongest next move for {selectedLead.company}: isolate the cause, assign an owner,
+              and turn the recommendation into an operational workflow.
             </p>
             <button className="secondary-action full">
               <Send size={16} />
-              Queue reply
+              Queue response
             </button>
           </div>
         </section>
@@ -502,12 +514,12 @@ function WorkflowsView() {
       <article className="lead-panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Workflow builder</p>
-            <h2>Automation templates</h2>
+            <p className="eyebrow">Workflow studio</p>
+            <h2>AI process automation templates</h2>
           </div>
           <button className="secondary-action">
             <Plus size={16} />
-            New workflow
+            New automation
           </button>
         </div>
 
@@ -542,11 +554,11 @@ function WorkflowsView() {
 
       <aside className="automation-panel workflow-preview">
         <div className="section-heading">
-          <span>Event map</span>
-          <strong>Live demo</strong>
+          <span>Operating model</span>
+          <strong>Live system</strong>
         </div>
         <div className="event-map">
-          {["lead_created", "ai_classified", "scenario_changed", "task_generated", "webhook_triggered"].map((event) => (
+          {["data_ingested", "ai_interpreted", "root_cause_found", "task_generated", "workflow_triggered"].map((event) => (
             <div className="event-node" key={event}>
               <span />
               <p>{event}</p>
@@ -564,11 +576,11 @@ function LogsView({ logs }: { logs: Array<AutomationLog & { leadName: string; co
       <div className="panel-header">
         <div>
           <p className="eyebrow">Observability</p>
-          <h2>Automation execution history</h2>
+          <h2>AI decision history</h2>
         </div>
         <button className="secondary-action">
           <SlidersHorizontal size={16} />
-          Configure retries
+          Configure routing
         </button>
       </div>
 
@@ -595,8 +607,8 @@ function SettingsView({ onResetDemo }: { onResetDemo: () => void }) {
       <article className="lead-panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Integrations</p>
-            <h2>Connection center</h2>
+          <p className="eyebrow">System integrations</p>
+          <h2>Operational intelligence layer</h2>
           </div>
           <span className="status status-new">Demo mode</span>
         </div>
@@ -629,13 +641,13 @@ function SettingsView({ onResetDemo }: { onResetDemo: () => void }) {
           <strong>4 enabled</strong>
         </div>
         <div className="control-list">
-          <Control icon={ShieldCheck} label="Role-based CRM access" />
-          <Control icon={Bell} label="Sales alert notifications" />
-          <Control icon={Database} label="Persistent data model planned" />
-          <Control icon={Webhook} label="Webhook retry policy" />
+          <Control icon={ShieldCheck} label="Role-based decision access" />
+          <Control icon={Bell} label="Critical anomaly alerts" />
+          <Control icon={Database} label="Knowledge base indexing" />
+          <Control icon={Webhook} label="Workflow activation policy" />
         </div>
         <button className="secondary-action full reset-action" onClick={onResetDemo}>
-          Reset local demo data
+          Reset local intelligence data
         </button>
       </article>
     </section>
@@ -652,19 +664,19 @@ function KanbanBoard({
   selectedLeadId: string;
 }) {
   const columns: Array<{ label: string; scenario: Scenario }> = [
-    { label: "Discovery", scenario: "Discovery" },
-    { label: "Qualification", scenario: "Qualification" },
-    { label: "Onboarding", scenario: "Onboarding" },
-    { label: "Active", scenario: "Active Client" },
-    { label: "Risk", scenario: "At Risk" }
+    { label: "Analysis", scenario: "Analysis" },
+    { label: "Impact", scenario: "Impact" },
+    { label: "Project", scenario: "Project" },
+    { label: "Operational", scenario: "Operational" },
+    { label: "Risk", scenario: "Risk" }
   ];
 
   return (
     <article className="kanban-panel">
       <div className="panel-header compact">
         <div>
-          <p className="eyebrow">Pipeline</p>
-          <h2>Scenario board</h2>
+          <p className="eyebrow">Decision board</p>
+          <h2>AI operating stages</h2>
         </div>
         <span className="status status-new">{leads.length} records</span>
       </div>
@@ -716,7 +728,7 @@ function LeadDetail({
     <article className="lead-panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Selected account</p>
+          <p className="eyebrow">Selected business signal</p>
           <h2>{selectedLead.name}</h2>
         </div>
         <span className={`status status-${selectedLead.status}`}>{statusLabels[selectedLead.status]}</span>
@@ -726,19 +738,19 @@ function LeadDetail({
         <EditableInfo label="Company" value={selectedLead.company} onChange={(value) => onUpdateLead({ company: value })} />
         <EditableInfo label="Email" value={selectedLead.email} onChange={(value) => onUpdateLead({ email: value })} />
         <EditableInfo label="Source" value={selectedLead.source} onChange={(value) => onUpdateLead({ source: value })} />
-        <EditableInfo label="Deal value" value={selectedLead.value} onChange={(value) => onUpdateLead({ value })} />
+        <EditableInfo label="Estimated impact" value={selectedLead.value} onChange={(value) => onUpdateLead({ value })} />
         <Info label="Intent" value={selectedLead.intent} />
         <Info label="Sentiment" value={selectedLead.sentiment} />
       </div>
 
       <div className="scenario-control">
-        <label htmlFor="scenario-select">Scenario</label>
+        <label htmlFor="scenario-select">Operating stage</label>
         <select
           id="scenario-select"
           value={selectedLead.scenario}
           onChange={(event) => onScenarioChange(event.target.value as Scenario)}
         >
-          {[...scenarioSteps, "At Risk"].map((scenario) => (
+          {[...scenarioSteps, "Risk"].map((scenario) => (
             <option key={scenario} value={scenario}>
               {scenario}
             </option>
@@ -746,7 +758,7 @@ function LeadDetail({
         </select>
       </div>
 
-      <div className="scenario-strip" aria-label="Scenario progress">
+      <div className="scenario-strip" aria-label="Operating progress">
         {scenarioSteps.map((scenario, index) => {
           const isCurrent = selectedLead.scenario === scenario;
           const isComplete = scenarioSteps.indexOf(selectedLead.scenario) > index;
@@ -758,19 +770,19 @@ function LeadDetail({
             </div>
           );
         })}
-        {selectedLead.scenario === "At Risk" && (
+        {selectedLead.scenario === "Risk" && (
           <div className="scenario-step risk current">
             <span>
               <CircleAlert size={15} />
             </span>
-            <p>At Risk</p>
+            <p>Risk</p>
           </div>
         )}
       </div>
 
       <div className="notes-block editable-notes">
         <textarea
-          aria-label="Lead notes"
+          aria-label="Audience notes"
           value={selectedLead.notes}
           onChange={(event) => onUpdateLead({ notes: event.target.value })}
         />
@@ -803,7 +815,7 @@ function LeadDetail({
 
         <section>
           <div className="section-heading">
-            <span>Tasks</span>
+            <span>Next actions</span>
             <strong>{selectedLead.tasks.filter((task) => !task.done).length} open</strong>
           </div>
           <div className="task-list">
@@ -825,6 +837,35 @@ function LeadDetail({
   );
 }
 
+function DecisionInsights({ selectedLead }: { selectedLead: Lead }) {
+  const insight = decisionInsightsForLead(selectedLead);
+
+  return (
+    <section className="automation-panel decision-panel">
+      <div className="section-heading">
+        <span>{insight.title}</span>
+        <strong>Live</strong>
+      </div>
+      <div className="decision-block">
+        <span>Anomaly / signal</span>
+        <strong>{insight.anomaly}</strong>
+      </div>
+      <div className="decision-block">
+        <span>Root cause</span>
+        <strong>{insight.cause}</strong>
+      </div>
+      <div className="decision-actions">
+        <span>Recommended actions</span>
+        <ol>
+          {insight.actions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 function AiPanel({
   handleClassify,
   message,
@@ -840,8 +881,8 @@ function AiPanel({
     <section className="ai-panel">
       <div className="panel-header compact">
         <div>
-          <p className="eyebrow">AI assistant</p>
-          <h2>Classify and route</h2>
+          <p className="eyebrow">AI command</p>
+          <h2>Interpret and decide</h2>
         </div>
         <Bot size={22} />
       </div>
@@ -850,17 +891,17 @@ function AiPanel({
 
       <button className="primary-action full" onClick={handleClassify}>
         <Sparkles size={17} />
-        Analyze message
+        Interpret signal
       </button>
 
       <div className="ai-result">
         <div>
-          <span>Current intent</span>
+          <span>AI interpretation</span>
           <strong title={selectedLead.intent}>{selectedLead.intent}</strong>
         </div>
         <ArrowRight size={17} />
         <div>
-          <span>Scenario</span>
+          <span>Operating stage</span>
           <strong title={selectedLead.scenario}>{selectedLead.scenario}</strong>
         </div>
       </div>
@@ -872,7 +913,7 @@ function AutomationPanel({ logs }: { logs: AutomationLog[] }) {
   return (
     <section className="automation-panel">
       <div className="section-heading">
-        <span>Automation logs</span>
+        <span>Decision logs</span>
         <strong>{logs.length}</strong>
       </div>
 
@@ -906,7 +947,7 @@ function QuickSignals({ logs }: { logs: Array<AutomationLog & { leadName: string
         <strong>Live</strong>
       </div>
       <div className="signal-grid">
-        <Info label="Pending runs" value={pending.toString()} />
+        <Info label="Pending workflows" value={pending.toString()} />
         <Info label="Errors" value={failed.toString()} />
       </div>
     </section>
@@ -943,14 +984,49 @@ function EditableInfo({ label, onChange, value }: { label: string; onChange: (va
 
 function viewTitle(view: View) {
   const titles: Record<View, string> = {
-    pipeline: "AI-driven CRM command center",
-    inbox: "AI inbox and lead triage",
-    workflows: "Workflow automation builder",
-    logs: "Automation observability",
-    settings: "Workspace settings"
+    pipeline: "AI operational command center",
+    inbox: "Knowledge and market signal triage",
+    workflows: "AI workflow automation studio",
+    logs: "Decision observability",
+    settings: "Operational intelligence settings"
   };
 
   return titles[view];
+}
+
+function IntroLanding({ onEnter }: { onEnter: () => void }) {
+  return (
+    <main className="intro-shell">
+      <section className="intro-panel">
+        <p className="intro-eyebrow">Portfolio prototype</p>
+        <h1>SIGNAL</h1>
+        <p className="intro-lead">
+          AI Operational Intelligence that transforms business signals into interpreted decisions,
+          recommended actions, and workflow automations.
+        </p>
+
+        <div className="intro-grid">
+          <article>
+            <strong>Decision dashboards</strong>
+            <span>Every anomaly gets a cause and a next action.</span>
+          </article>
+          <article>
+            <strong>Knowledge intelligence</strong>
+            <span>Documents, procedures and manuals become queryable signals.</span>
+          </article>
+          <article>
+            <strong>Process automation</strong>
+            <span>Quick wins mapped to measurable operational impact.</span>
+          </article>
+        </div>
+
+        <button className="primary-action intro-cta" onClick={onEnter}>
+          <Play size={17} />
+          Enter workspace
+        </button>
+      </section>
+    </main>
+  );
 }
 
 export default App;
@@ -970,33 +1046,33 @@ function loadStoredLeads() {
 function createDemoLead(index: number): Lead {
   return {
     id: crypto.randomUUID(),
-    name: `New Lead ${index}`,
-    company: "New Account",
-    email: `lead${index}@example.com`,
+    name: `Process Signal ${index}`,
+    company: "Internal Operations",
+    email: `signal${index}@example.com`,
     status: "new",
-    scenario: "Discovery",
+    scenario: "Analysis",
     score: 52,
     priority: "Medium",
-    tags: ["new", "manual-entry"],
-    source: "Manual entry",
-    value: "EUR 1.500",
+    tags: ["new", "process-signal"],
+    source: "Manual process input",
+    value: "2.4h saved weekly",
     lastActivity: "Just now",
-    intent: "general_interest",
+    intent: "general_signal",
     sentiment: "Neutral",
-    notes: "New lead created from the CRM workspace. Qualify the request and route it to the right scenario.",
+    notes: "New business signal created from the SIGNAL workspace. Analyze the process, estimate impact, and route it to the right operating stage.",
     events: [
       {
         id: crypto.randomUUID(),
         type: "lead_created",
-        title: "Lead created manually",
-        description: "A CRM operator added this lead from the product demo workspace.",
+        title: "Business signal captured manually",
+        description: "An operator added a process signal from the product demo workspace.",
         timestamp: "Just now"
       }
     ],
     tasks: [
       {
         id: crypto.randomUUID(),
-        title: "Qualify lead and confirm next step",
+        title: "Analyze process and confirm next action",
         owner: "Sales",
         due: "Today",
         done: false
@@ -1005,11 +1081,11 @@ function createDemoLead(index: number): Lead {
     automationLogs: [
       {
         id: crypto.randomUUID(),
-        workflow: "Manual lead intake",
+        workflow: "Manual process signal intake",
         event: "lead_created",
         status: "success",
         timestamp: "Just now",
-        payload: "{ source: 'manual_entry', scenario: 'Discovery' }"
+        payload: "{ source: 'manual_process_input', stage: 'Analysis' }"
       }
     ]
   };
@@ -1017,14 +1093,75 @@ function createDemoLead(index: number): Lead {
 
 function scenarioToStatus(scenario: Scenario): LeadStatus {
   const map: Record<Scenario, LeadStatus> = {
-    Discovery: "new",
-    Qualification: "qualified",
-    Onboarding: "onboarding",
-    "Active Client": "active",
-    "At Risk": "at_risk"
+    Analysis: "new",
+    Impact: "qualified",
+    Project: "onboarding",
+    Operational: "active",
+    Risk: "at_risk"
   };
 
   return map[scenario];
+}
+
+function decisionInsightsForLead(lead: Lead) {
+  const insights: Record<
+    string,
+    { title: string; anomaly: string; cause: string; actions: string[] }
+  > = {
+    performance_anomaly: {
+      title: "Decision dashboard",
+      anomaly: "Conversion drop below rolling target",
+      cause: "Paid budget pause combined with mobile landing friction",
+      actions: [
+        "Reactivate acquisition budget within 24h",
+        "Fix mobile landing bounce above critical threshold",
+        "Review email funnel performance for week 3"
+      ]
+    },
+    knowledge_query: {
+      title: "Knowledge base",
+      anomaly: "Cross-document question detected",
+      cause: "Answer depends on contracts, procedures and HR policy sources",
+      actions: [
+        "Return source-backed answer with confidence score",
+        "Route low-confidence queries to human review",
+        "Log recurring questions for FAQ enrichment"
+      ]
+    },
+    reputation_risk: {
+      title: "Reputation monitor",
+      anomaly: "Sentiment weakening on competitor comparison queries",
+      cause: "Weak signals across monitored channels before escalation",
+      actions: [
+        "Prepare response brief with proof points",
+        "Compare competitor narrative against brand positioning",
+        "Schedule executive alert if sentiment drops further"
+      ]
+    },
+    process_automation: {
+      title: "Process automation",
+      anomaly: "Manual work above efficiency threshold",
+      cause: "Recurring finance task still handled outside workflow",
+      actions: [
+        "Map exception handling rules",
+        "Enable production workflow with savings tracking",
+        "Assign owner for weekly automation review"
+      ]
+    }
+  };
+
+  return (
+    insights[lead.intent] ?? {
+      title: "Operational analysis",
+      anomaly: "New business signal requires interpretation",
+      cause: "Insufficient structured data to auto-assign root cause",
+      actions: [
+        "Run AI interpretation on incoming signal",
+        "Estimate business impact before workflow activation",
+        "Assign owner for manual validation"
+      ]
+    }
+  );
 }
 
 function applyScenarioChange(lead: Lead, scenario: Scenario): Lead {
@@ -1037,8 +1174,8 @@ function applyScenarioChange(lead: Lead, scenario: Scenario): Lead {
       {
         id: crypto.randomUUID(),
         type: "scenario_changed",
-        title: `Scenario manually changed to ${scenario}`,
-        description: "CRM operator updated the customer journey stage from the account workspace.",
+        title: `Operating stage manually changed to ${scenario}`,
+        description: "Operator updated the AI operating stage from the SIGNAL workspace.",
         timestamp: "Just now"
       },
       ...lead.events
@@ -1046,11 +1183,11 @@ function applyScenarioChange(lead: Lead, scenario: Scenario): Lead {
     automationLogs: [
       {
         id: crypto.randomUUID(),
-        workflow: "Manual scenario override",
+        workflow: "Manual operating stage override",
         event: "scenario_changed",
         status: "success",
         timestamp: "Just now",
-        payload: `{ scenario: '${scenario}', operator: 'demo_user' }`
+        payload: `{ stage: '${scenario}', operator: 'demo_user' }`
       },
       ...lead.automationLogs
     ]

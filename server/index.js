@@ -17,7 +17,7 @@ app.use(cors({ origin: true }));
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_request, response) => {
-  response.json({ ok: true, service: "flowpilot-api" });
+  response.json({ ok: true, service: "signal-api" });
 });
 
 app.get("/api/leads", (_request, response) => {
@@ -28,33 +28,33 @@ app.post("/api/leads", (request, response) => {
   const index = countLeads() + 1;
   const lead = {
     id: crypto.randomUUID(),
-    name: request.body.name || `New Lead ${index}`,
-    company: request.body.company || "New Account",
-    email: request.body.email || `lead${index}@example.com`,
+    name: request.body.name || `Process Signal ${index}`,
+    company: request.body.company || "Internal Operations",
+    email: request.body.email || `signal${index}@example.com`,
     status: "new",
-    scenario: "Discovery",
+    scenario: "Analysis",
     score: 52,
     priority: "Medium",
-    tags: ["new", "api-created"],
-    source: request.body.source || "API entry",
-    value: request.body.value || "EUR 1.500",
+    tags: ["new", "process-signal"],
+    source: request.body.source || "API process input",
+    value: request.body.value || "2.4h saved weekly",
     lastActivity: "Just now",
-    intent: "general_interest",
+    intent: "operational_signal",
     sentiment: "Neutral",
-    notes: request.body.notes || "New lead created from the API.",
+    notes: request.body.notes || "New business signal created from the API.",
     events: [
       {
         id: crypto.randomUUID(),
         type: "lead_created",
-        title: "Lead created through API",
-        description: "A lead was added through the backend API.",
+        title: "Business signal captured through API",
+        description: "A process signal was added through the backend API.",
         timestamp: "Just now"
       }
     ],
     tasks: [
       {
         id: crypto.randomUUID(),
-        title: "Qualify lead and confirm next step",
+        title: "Analyze process and confirm next action",
         owner: "Sales",
         due: "Today",
         done: false
@@ -63,11 +63,11 @@ app.post("/api/leads", (request, response) => {
     automationLogs: [
       {
         id: crypto.randomUUID(),
-        workflow: "API lead intake",
+        workflow: "API process signal intake",
         event: "lead_created",
         status: "success",
         timestamp: "Just now",
-        payload: "{ source: 'api_entry', scenario: 'Discovery' }"
+        payload: "{ source: 'api_process_input', stage: 'Analysis' }"
       }
     ]
   };
@@ -126,5 +126,5 @@ app.post("/api/leads/:id/classify", (request, response) => {
 });
 
 app.listen(port, () => {
-  console.log(`FlowPilot API listening on http://127.0.0.1:${port}`);
+  console.log(`SIGNAL API listening on http://127.0.0.1:${port}`);
 });

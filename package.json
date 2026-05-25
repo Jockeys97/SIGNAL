@@ -1,5 +1,5 @@
 {
-  "name": "ai-crm-automation-platform",
+  "name": "signal-ai-operational-intelligence",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,6 +9,7 @@
     "db:seed": "node server/seed.js",
     "setup:api": "node server/seed.js",
     "build": "tsc && vite build",
+    "verify": "node scripts/verify.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

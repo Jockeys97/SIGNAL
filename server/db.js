@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(root, "data");
-const dbPath = join(dataDir, "flowpilot.db");
+const dbPath = join(dataDir, "signal.db");
 
 mkdirSync(dataDir, { recursive: true });
 
