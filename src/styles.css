@@ -1494,6 +1494,10 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .workspace {
+    scroll-margin-top: 12px;
+  }
+
   .sidebar {
     border-right: 0;
     border-bottom: 1px solid var(--border);

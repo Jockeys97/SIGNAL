@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -122,7 +122,22 @@ function App() {
   const [mobilePipelineView, setMobilePipelineView] = useState<"list" | "detail">("list");
   const [isMobile, setIsMobile] = useState(false);
   const [stubNotice, setStubNotice] = useState<string | null>(null);
+  const workspaceRef = useRef<HTMLElement>(null);
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? leads[0];
+
+  function scrollWorkspaceOnMobile() {
+    if (!window.matchMedia("(max-width: 820px)").matches) return;
+
+    window.requestAnimationFrame(() => {
+      workspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function handleNavView(view: View) {
+    setActiveView(view);
+    if (view === "pipeline") setMobilePipelineView("list");
+    scrollWorkspaceOnMobile();
+  }
 
   useEffect(() => {
     if (!stubNotice) return;
@@ -251,6 +266,8 @@ function App() {
     setLeads((currentLeads) => [lead, ...currentLeads]);
     setSelectedLeadId(lead.id);
     setActiveView("pipeline");
+    setMobilePipelineView("list");
+    scrollWorkspaceOnMobile();
   }
 
   async function handleUpdateLead(patch: Partial<LeadDraft>) {
@@ -350,7 +367,7 @@ function App() {
               <button
                 className={activeView === item.id ? "active" : ""}
                 key={item.id}
-                onClick={() => setActiveView(item.id)}
+                onClick={() => handleNavView(item.id)}
                 title={item.label}
               >
                 <Icon size={18} />
@@ -385,7 +402,7 @@ function App() {
         </section>
       </aside>
 
-      <section className="workspace">
+      <section className="workspace" ref={workspaceRef} id="workspace-main">
         <header className="topbar">
           <div>
             <p className="eyebrow">Prototipo portfolio · AI operativa per decisioni aziendali</p>
@@ -402,7 +419,7 @@ function App() {
               <Plus size={16} />
               Nuovo segnale
             </button>
-            <button className="primary-action" onClick={() => setActiveView("workflows")}>
+            <button className="primary-action" onClick={() => handleNavView("workflows")}>
               <Zap size={17} />
               Vedi automazioni
             </button>

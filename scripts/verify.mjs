@@ -18,8 +18,22 @@ async function verifyIntro(page) {
   await page.locator("h1", { hasText: "Cruscotto decisionale AI" }).waitFor();
 }
 
+async function openMobileLeadDetail(page) {
+  if (await page.getByLabel("Azienda").isVisible()) return;
+
+  const selectedRow = page.locator(".lead-row.selected");
+  if (await selectedRow.isVisible()) {
+    await selectedRow.first().click();
+  } else {
+    await page.locator(".kanban-card").first().click();
+  }
+
+  await page.waitForTimeout(250);
+}
+
 async function verifyViewport(name, viewport) {
   const page = await browser.newPage({ viewport });
+  const isMobile = viewport.width < 820;
   const consoleErrors = [];
 
   page.on("console", (message) => {
@@ -42,8 +56,10 @@ async function verifyViewport(name, viewport) {
   const title = await page.locator("h1").textContent();
 
   await page.getByRole("button", { name: "Riproduci demo" }).click();
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(300);
 
+  if (isMobile) await openMobileLeadDetail(page);
+  await page.getByLabel("Azienda").scrollIntoViewIfNeeded();
   const demoCompany = await page.getByLabel("Azienda").inputValue();
   const metricCards = await page.locator(".metric-card").count();
 
@@ -54,13 +70,20 @@ async function verifyViewport(name, viewport) {
   const status = await page.locator(".status").first().textContent();
 
   await page.getByRole("button", { name: "Nuovo segnale" }).click();
+  await page.waitForTimeout(250);
+  if (isMobile) await openMobileLeadDetail(page);
+  await page.getByLabel("Azienda").scrollIntoViewIfNeeded();
   await page.getByLabel("Azienda").fill(`QA Account ${name}`);
   await page.getByLabel("Stage del metodo", { exact: true }).selectOption("Project");
   await page.locator(".task-item").first().click();
   await page.reload({ waitUntil: "networkidle" });
+  if (isMobile) await openMobileLeadDetail(page);
+  await page.getByLabel("Azienda").scrollIntoViewIfNeeded();
   const persistedCompany = await page.getByLabel("Azienda").inputValue();
 
   const sidebar = page.locator(".sidebar");
+  await sidebar.getByRole("button", { name: "Segnali", exact: true }).click();
+  await page.locator("h1", { hasText: "Segnali da smistare" }).waitFor();
   await sidebar.getByRole("button", { name: "Automazioni", exact: true }).click();
   await page.locator("h1", { hasText: "Automazioni collegate" }).waitFor();
   await sidebar.getByRole("button", { name: "Storico", exact: true }).click();
