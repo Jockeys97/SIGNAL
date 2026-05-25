@@ -121,7 +121,21 @@ function App() {
   const [flashTick, setFlashTick] = useState(0);
   const [mobilePipelineView, setMobilePipelineView] = useState<"list" | "detail">("list");
   const [isMobile, setIsMobile] = useState(false);
+  const [stubNotice, setStubNotice] = useState<string | null>(null);
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? leads[0];
+
+  useEffect(() => {
+    if (!stubNotice) return;
+
+    const timer = window.setTimeout(() => setStubNotice(null), 3600);
+    return () => window.clearTimeout(timer);
+  }, [stubNotice]);
+
+  function notifyDemoStub(feature: string) {
+    setStubNotice(
+      `${feature}: non attivo in questa demo. In produzione si collega a workflow reali (n8n, email, webhook).`
+    );
+  }
 
   useEffect(() => {
     if (apiModeEnabled) return;
@@ -441,17 +455,20 @@ function App() {
             leads={filteredLeads}
             message={message}
             onLeadSelect={handleLeadSelect}
+            onStubAction={notifyDemoStub}
             selectedLead={selectedLead}
             setMessage={setMessage}
           />
         )}
 
-        {activeView === "workflows" && <WorkflowsView />}
+        {activeView === "workflows" && <WorkflowsView onStubAction={notifyDemoStub} />}
 
-        {activeView === "logs" && <LogsView logs={allLogs} />}
+        {activeView === "logs" && <LogsView logs={allLogs} onStubAction={notifyDemoStub} />}
 
-        {activeView === "settings" && <SettingsView onResetDemo={handleResetDemo} />}
+        {activeView === "settings" && <SettingsView onResetDemo={handleResetDemo} onStubAction={notifyDemoStub} />}
       </section>
+
+      {stubNotice && <DemoToast message={stubNotice} onDismiss={() => setStubNotice(null)} />}
     </main>
   );
 }
@@ -526,6 +543,7 @@ function InboxView({
   leads,
   message,
   onLeadSelect,
+  onStubAction,
   selectedLead,
   setMessage
 }: {
@@ -533,6 +551,7 @@ function InboxView({
   leads: Lead[];
   message: string;
   onLeadSelect: (leadId: string, view?: View) => void;
+  onStubAction: (feature: string) => void;
   selectedLead: Lead;
   setMessage: (message: string) => void;
 }) {
@@ -583,7 +602,11 @@ function InboxView({
               SIGNAL propone per {selectedLead.company}: isolare la causa, assegnare un owner e trasformare la
               raccomandazione in workflow operativo.
             </p>
-            <button className="secondary-action full" type="button">
+            <button
+              className="secondary-action full"
+              type="button"
+              onClick={() => onStubAction("Metti in coda risposta")}
+            >
               <Send size={16} />
               Metti in coda risposta
             </button>
@@ -594,7 +617,7 @@ function InboxView({
   );
 }
 
-function WorkflowsView() {
+function WorkflowsView({ onStubAction }: { onStubAction: (feature: string) => void }) {
   return (
     <section className="workflow-layout">
       <article className="lead-panel">
@@ -603,7 +626,7 @@ function WorkflowsView() {
             <p className="eyebrow">Studio automazioni</p>
             <h2>Template di automazione processi</h2>
           </div>
-          <button className="secondary-action" type="button">
+          <button className="secondary-action" type="button" onClick={() => onStubAction("Nuova automazione")}>
             <Plus size={16} />
             Nuova automazione
           </button>
@@ -660,7 +683,13 @@ function WorkflowsView() {
   );
 }
 
-function LogsView({ logs }: { logs: Array<AutomationLog & { leadName: string; company: string }> }) {
+function LogsView({
+  logs,
+  onStubAction
+}: {
+  logs: Array<AutomationLog & { leadName: string; company: string }>;
+  onStubAction: (feature: string) => void;
+}) {
   return (
     <section className="lead-panel">
       <div className="panel-header">
@@ -668,7 +697,7 @@ function LogsView({ logs }: { logs: Array<AutomationLog & { leadName: string; co
           <p className="eyebrow">Osservabilità</p>
           <h2>Storico decisioni AI</h2>
         </div>
-        <button className="secondary-action" type="button">
+        <button className="secondary-action" type="button" onClick={() => onStubAction("Configura routing")}>
           <SlidersHorizontal size={16} />
           Configura routing
         </button>
@@ -691,7 +720,13 @@ function LogsView({ logs }: { logs: Array<AutomationLog & { leadName: string; co
   );
 }
 
-function SettingsView({ onResetDemo }: { onResetDemo: () => void }) {
+function SettingsView({
+  onResetDemo,
+  onStubAction
+}: {
+  onResetDemo: () => void;
+  onStubAction: (feature: string) => void;
+}) {
   return (
     <section className="settings-grid">
       <article className="lead-panel">
@@ -716,7 +751,12 @@ function SettingsView({ onResetDemo }: { onResetDemo: () => void }) {
                   <strong>{integration.name}</strong>
                   <small>{integration.status}</small>
                 </div>
-                <button className="icon-button" type="button" title={`Configura ${integration.name}`}>
+                <button
+                  className="icon-button"
+                  type="button"
+                  title={`Configura ${integration.name}`}
+                  onClick={() => onStubAction(`Configura ${integration.name}`)}
+                >
                   <Link2 size={17} />
                 </button>
               </div>
@@ -1187,6 +1227,17 @@ function formatScenarioLabel(scenario: Scenario) {
   };
 
   return labels[scenario];
+}
+
+function DemoToast({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <div className="demo-toast" role="status" aria-live="polite">
+      <p>{message}</p>
+      <button type="button" className="demo-toast-close" onClick={onDismiss} aria-label="Chiudi avviso">
+        ×
+      </button>
+    </div>
+  );
 }
 
 function BlissMethodStrip() {

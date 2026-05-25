@@ -1689,6 +1689,57 @@ h2 {
   }
 }
 
+.demo-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+  width: min(420px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.demo-toast p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.demo-toast-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.demo-toast-close:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+@media (max-width: 820px) {
+  .demo-toast {
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;

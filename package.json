@@ -10,6 +10,7 @@
     "setup:api": "node server/seed.js",
     "build": "tsc && vite build",
     "verify": "node scripts/verify.mjs",
+    "record:demo": "node scripts/record-demo.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

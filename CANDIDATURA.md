@@ -6,6 +6,12 @@ SIGNAL è un prototipo di **AI Operational Intelligence**: un sistema che legge 
 
 Non è un CRM tradizionale. È una demo prodotto che mostra come unire **frontend moderno**, **logica AI**, **automazione workflow** e **pensiero decisionale** in un unico sistema operativo.
 
+## Video demo (registrato)
+
+- File locale: `artifacts/signal-demo-bliss.mp4` (~45 s, senza audio)
+- Rigenerare: `npm run record:demo` (build + registrazione automatica del flusso)
+- Per Bliss: carica il MP4 su Loom/Google Drive e incolla il link nella mail
+
 ## Demo consigliata (45–60 secondi)
 
 1. Apri la live demo: https://jockeys97.github.io/SIGNAL/

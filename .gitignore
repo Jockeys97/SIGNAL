@@ -4,5 +4,8 @@ copia/
 .DS_Store
 *.log
 artifacts/*.png
+artifacts/*.webm
+artifacts/*.mp4
+artifacts/video-tmp/
 server/data/*.db
 server/data/*.db-*
